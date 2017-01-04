@@ -5,6 +5,9 @@ import com.badlogic.gdx.Screen;
 import com.badlogic.gdx.graphics.GL20;
 import com.badlogic.gdx.graphics.OrthographicCamera;
 import com.badlogic.gdx.graphics.Texture;
+import com.badlogic.gdx.maps.tiled.TiledMap;
+import com.badlogic.gdx.maps.tiled.TmxMapLoader;
+import com.badlogic.gdx.maps.tiled.renderers.OrthogonalTiledMapRenderer;
 import com.badlogic.gdx.utils.viewport.FitViewport;
 import com.badlogic.gdx.utils.viewport.ScreenViewport;
 import com.badlogic.gdx.utils.viewport.StretchViewport;
@@ -20,6 +23,10 @@ private MarioBros game;
     private Hud hud;
     private OrthographicCamera camera;
     private Viewport gamePort;//используется для лучшего отображения на разных размерах экранов
+    private TmxMapLoader mapLoader;//загружает карту в игру
+    private TiledMap map;//ссылка на саму карту
+    private OrthogonalTiledMapRenderer renderer;
+
     public PlayScreen (MarioBros game){
         this.game=game;
         hud=new Hud(game.batch);
@@ -28,7 +35,25 @@ private MarioBros game;
        // gamePort=new StretchViewport(800,480,camera);//изображение будет растягиваться при изменении размера экрана
        // gamePort=new ScreenViewport(camera);
         gamePort=new FitViewport(MarioBros.V_WIDTH,MarioBros.V_HEIGHT,camera);//изображение масштабируется под размер экрана
+
+        mapLoader =new TmxMapLoader();
+        map=mapLoader.load("level1.tmx");//инициализируем карту
+        renderer=new OrthogonalTiledMapRenderer(map);//отрисовываем
+        camera.position.set(gamePort.getWorldWidth()/2,gamePort.getWorldHeight()/2,0);//устанавливаем камеру
     }
+
+
+    public void update(float dt){
+        handleInput(dt);
+        camera.update();//нужно обновлять камеру каждый раз когда происходит какоето движение, нажатие на клавиши
+        renderer.setView(camera);
+    }
+
+    public void handleInput(float dt) {
+        if(Gdx.input.isTouched())//если произошло нажатие
+            camera.position.x +=100*dt;//меняем расположение камеры
+    }
+
     @Override
     public void show() {
 
@@ -36,8 +61,10 @@ private MarioBros game;
 
     @Override
     public void render(float delta) {
+        update(delta);
         Gdx.gl.glClearColor(24/255f, 242/255f, 224/255f, 1);//задаём цвет
         Gdx.gl.glClear(GL20.GL_COLOR_BUFFER_BIT);// Эта строка очищает экран
+        renderer.render();
         game.batch.setProjectionMatrix(hud.stage.getCamera().combined);
         hud.stage.draw();
 
