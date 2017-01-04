@@ -1,6 +1,7 @@
 package islavstan.game.screens;
 
 import com.badlogic.gdx.Gdx;
+import com.badlogic.gdx.Input;
 import com.badlogic.gdx.Screen;
 import com.badlogic.gdx.graphics.GL20;
 import com.badlogic.gdx.graphics.OrthographicCamera;
@@ -25,6 +26,7 @@ import com.badlogic.gdx.utils.viewport.Viewport;
 
 import islavstan.game.MarioBros;
 import islavstan.game.scenes.Hud;
+import islavstan.game.sprites.Mario;
 
 
 public class PlayScreen implements Screen {
@@ -46,20 +48,22 @@ private MarioBros game;
     private Box2DDebugRenderer b2dr;
     //-------------Box2d variables----------------
 
+    Mario player;;
 
     public PlayScreen (MarioBros game){
         this.game=game;
         hud=new Hud(game.batch);
+
 
         //texture=new Texture("badlogic.jpg");
         // gamePort=new StretchViewport(800,480,camera);//изображение будет растягиваться при изменении размера экрана
         // gamePort=new ScreenViewport(camera);
 
         camera=new OrthographicCamera();//создаём камеру которая будет следовать за марио
-        gamePort=new FitViewport(MarioBros.V_WIDTH,MarioBros.V_HEIGHT,camera);//изображение масштабируется под размер экрана
+        gamePort=new FitViewport(MarioBros.V_WIDTH/MarioBros.PPM,MarioBros.V_HEIGHT/MarioBros.PPM,camera);//изображение масштабируется под размер экрана
         mapLoader =new TmxMapLoader();
         map=mapLoader.load("level1.tmx");//инициализируем карту
-        renderer=new OrthogonalTiledMapRenderer(map);//отрисовываем
+        renderer=new OrthogonalTiledMapRenderer(map,1/MarioBros.PPM);//отрисовываем
         camera.position.set(gamePort.getWorldWidth()/2,gamePort.getWorldHeight()/2,0);//устанавливаем камеру
 
 
@@ -68,8 +72,10 @@ private MarioBros game;
         параметром всё ясно, то со вторым не очень. В принципе, этот параметр всегда можно в
         true ставить, для большей продуктивности.*/
 
-        world = new World(new Vector2(0,0),true);//контейнер для объектов
+        world = new World(new Vector2(0,-10),true);//контейнер для объектов
         b2dr=new Box2DDebugRenderer();
+
+        player=new Mario(world);
 
         BodyDef bodyDef =new BodyDef();//содержит все данные, необходимые для построения твердого тела
         PolygonShape shape =new PolygonShape();
@@ -82,12 +88,18 @@ private MarioBros game;
         for(MapObject object:map.getLayers().get(2).getObjects().getByType(RectangleMapObject.class)){//получаем землю, она вторая в списке, счёт с нуля
             Rectangle rect =((RectangleMapObject)object).getRectangle();
 
-            bodyDef.type=BodyDef.BodyType.StaticBody;
-            bodyDef.position.set(rect.getX()+rect.getWidth()/2,rect.getY()+rect.getHeight()/2);
+           /* Тип объекта задаётся с помощью BodyType. Тела бывают трёх типов:
+            static — нулевая масса, нулевая скорость, передвинуть можно лишь программно;
+            kinematic — нулевая масса, ненулевая скорость, может быть сдвинут;
+            dynamic — положительная масса, ненулевая скорость, может быть сдвинут.*/
+
+            bodyDef.type=BodyDef.BodyType.StaticBody;//установить тип тела
+
+            bodyDef.position.set((rect.getX()+rect.getWidth()/2)/MarioBros.PPM,(rect.getY()+rect.getHeight()/2)/MarioBros.PPM);
 
             body = world.createBody(bodyDef);
 
-            shape.setAsBox(rect.getWidth()/2,rect.getHeight()/2);
+            shape.setAsBox(rect.getWidth()/2/MarioBros.PPM,rect.getHeight()/2/MarioBros.PPM);
             fdef.shape=shape;
             body.createFixture(fdef);
 
@@ -98,11 +110,11 @@ private MarioBros game;
             Rectangle rect =((RectangleMapObject)object).getRectangle();
 
             bodyDef.type=BodyDef.BodyType.StaticBody;
-            bodyDef.position.set(rect.getX()+rect.getWidth()/2,rect.getY()+rect.getHeight()/2);
+            bodyDef.position.set((rect.getX()+rect.getWidth()/2)/MarioBros.PPM,(rect.getY()+rect.getHeight()/2)/MarioBros.PPM);
 
             body = world.createBody(bodyDef);
 
-            shape.setAsBox(rect.getWidth()/2,rect.getHeight()/2);
+            shape.setAsBox(rect.getWidth()/2/MarioBros.PPM,rect.getHeight()/2/MarioBros.PPM);
             fdef.shape=shape;
             body.createFixture(fdef);
 
@@ -112,11 +124,11 @@ private MarioBros game;
             Rectangle rect =((RectangleMapObject)object).getRectangle();
 
             bodyDef.type=BodyDef.BodyType.StaticBody;
-            bodyDef.position.set(rect.getX()+rect.getWidth()/2,rect.getY()+rect.getHeight()/2);
+            bodyDef.position.set((rect.getX()+rect.getWidth()/2)/MarioBros.PPM,(rect.getY()+rect.getHeight()/2)/MarioBros.PPM);
 
             body = world.createBody(bodyDef);
 
-            shape.setAsBox(rect.getWidth()/2,rect.getHeight()/2);
+            shape.setAsBox(rect.getWidth()/2/MarioBros.PPM,rect.getHeight()/2/MarioBros.PPM);
             fdef.shape=shape;
             body.createFixture(fdef);
 
@@ -127,11 +139,11 @@ private MarioBros game;
             Rectangle rect =((RectangleMapObject)object).getRectangle();
 
             bodyDef.type=BodyDef.BodyType.StaticBody;
-            bodyDef.position.set(rect.getX()+rect.getWidth()/2,rect.getY()+rect.getHeight()/2);
+            bodyDef.position.set((rect.getX()+rect.getWidth()/2)/MarioBros.PPM,(rect.getY()+rect.getHeight()/2)/MarioBros.PPM);
 
             body = world.createBody(bodyDef);
 
-            shape.setAsBox(rect.getWidth()/2,rect.getHeight()/2);
+            shape.setAsBox(rect.getWidth()/2/MarioBros.PPM,rect.getHeight()/2/MarioBros.PPM);
             fdef.shape=shape;
             body.createFixture(fdef);
 
@@ -142,13 +154,27 @@ private MarioBros game;
 
     public void update(float dt){
         handleInput(dt);
+        world.step(1/60f,6,2);// указывает частоту, с которой обновлять физику
+        camera.position.x=player.b2body.getPosition().x;
         camera.update();//нужно обновлять камеру каждый раз когда происходит какоето движение, нажатие на клавиши
         renderer.setView(camera);
     }
 
     public void handleInput(float dt) {
-        if(Gdx.input.isTouched())//если произошло нажатие
-            camera.position.x +=100*dt;//меняем расположение камеры
+      /*  if(Gdx.input.isTouched())//если произошло нажатие
+            camera.position.x +=100*dt/ MarioBros.PPM;//меняем расположение камеры*/
+
+        if(Gdx.input.isKeyJustPressed(Input.Keys.UP)){//одноразовое нажатие
+            player.b2body.applyLinearImpulse(new Vector2(0,3f),player.b2body.getWorldCenter(),true);
+        }
+        if(Gdx.input.isKeyPressed(Input.Keys.RIGHT) && player.b2body.getLinearVelocity().x<=2){
+            player.b2body.applyLinearImpulse(new Vector2(0.1f,0),player.b2body.getWorldCenter(),true);
+
+        }
+        if(Gdx.input.isKeyPressed(Input.Keys.LEFT) && player.b2body.getLinearVelocity().x>= -2){
+            player.b2body.applyLinearImpulse(new Vector2(-0.1f,0),player.b2body.getWorldCenter(),true);
+
+        }
     }
 
     @Override
