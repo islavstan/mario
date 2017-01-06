@@ -132,7 +132,7 @@ private MarioBros game;
         Gdx.gl.glClear(GL20.GL_COLOR_BUFFER_BIT);// Эта строка очищает экран
         //render game map
         renderer.render();
-        game.batch.setProjectionMatrix(camera.combined);
+        game.batch.setProjectionMatrix(camera.combined);//the combined projection and view matrix
 
         game.batch.begin();
         player.draw(game.batch);
