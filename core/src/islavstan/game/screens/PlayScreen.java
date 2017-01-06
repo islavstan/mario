@@ -6,6 +6,8 @@ import com.badlogic.gdx.Screen;
 import com.badlogic.gdx.graphics.GL20;
 import com.badlogic.gdx.graphics.OrthographicCamera;
 import com.badlogic.gdx.graphics.Texture;
+import com.badlogic.gdx.graphics.TextureArray;
+import com.badlogic.gdx.graphics.g2d.TextureAtlas;
 import com.badlogic.gdx.maps.MapObject;
 import com.badlogic.gdx.maps.objects.RectangleMapObject;
 import com.badlogic.gdx.maps.tiled.TiledMap;
@@ -32,6 +34,8 @@ import islavstan.game.tools.B2WorldCreator;
 
 public class PlayScreen implements Screen {
 private MarioBros game;
+    private TextureAtlas atlas;
+
   //  Texture texture;
     private Hud hud;
     private OrthographicCamera camera;
@@ -49,9 +53,10 @@ private MarioBros game;
     private Box2DDebugRenderer b2dr;
     //-------------Box2d variables----------------
 
-    Mario player;;
+    Mario player;
 
     public PlayScreen (MarioBros game){
+        atlas=new TextureAtlas("mario.pack");
         this.game=game;
         hud=new Hud(game.batch);
 
@@ -76,9 +81,10 @@ private MarioBros game;
         world = new World(new Vector2(0,-10),true);//контейнер для объектов
         b2dr=new Box2DDebugRenderer();
 
-        player=new Mario(world);
+
 
       new B2WorldCreator(world,map);
+        player=new Mario(world,this);
 
     }
 
@@ -86,9 +92,11 @@ private MarioBros game;
     public void update(float dt){
         handleInput(dt);
         world.step(1/60f,6,2);// указывает частоту, с которой обновлять физику
+        player.update(dt);
         camera.position.x=player.b2body.getPosition().x;
         camera.update();//нужно обновлять камеру каждый раз когда происходит какоето движение, нажатие на клавиши
         renderer.setView(camera);
+
     }
 
     public void handleInput(float dt) {
@@ -108,6 +116,10 @@ private MarioBros game;
         }
     }
 
+
+    public TextureAtlas getAtlas(){
+        return  atlas;
+    }
     @Override
     public void show() {
 
@@ -120,7 +132,11 @@ private MarioBros game;
         Gdx.gl.glClear(GL20.GL_COLOR_BUFFER_BIT);// Эта строка очищает экран
         //render game map
         renderer.render();
-        game.batch.setProjectionMatrix(hud.stage.getCamera().combined);
+        game.batch.setProjectionMatrix(camera.combined);
+
+        game.batch.begin();
+        player.draw(game.batch);
+        game.batch.end();
         hud.stage.draw();
 
 
