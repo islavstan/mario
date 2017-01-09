@@ -30,6 +30,7 @@ import islavstan.game.MarioBros;
 import islavstan.game.scenes.Hud;
 import islavstan.game.sprites.Mario;
 import islavstan.game.tools.B2WorldCreator;
+import islavstan.game.tools.WorldContactListener;
 
 
 public class PlayScreen implements Screen {
@@ -85,6 +86,10 @@ private MarioBros game;
 
       new B2WorldCreator(world,map);
         player=new Mario(world,this);
+
+
+        world.setContactListener(new WorldContactListener());//слушатель касаний марио
+
 
     }
 
