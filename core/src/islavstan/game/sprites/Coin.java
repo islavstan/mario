@@ -17,6 +17,7 @@ public class Coin extends InteractiveTailObject {
     public Coin(World world, TiledMap map, Rectangle bounds) {
         super(world, map, bounds);
         fixture.setUserData(this);
+        setCategoryFilter(MarioBros.COIN_BIT);
 
 
     }
@@ -24,5 +25,6 @@ public class Coin extends InteractiveTailObject {
     @Override
     public void onHeadHit() {
         Gdx.app.log("coin","касание");
+
     }
 }
